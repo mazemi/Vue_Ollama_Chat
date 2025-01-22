@@ -1,25 +1,32 @@
 <template>
   <div class="container">
-    <Title />
-    <Chat />
+    <Nav @StratNewChat="ClearChat"/>
+    <Chat :messages="messages"/>
   </div>
 </template>
 
 <script>
 
 import Chat from "./components/Chat.vue";
-import Title from "./components/Title.vue";
+import Nav from "./components/Nav.vue";
 
 export default {
   name: "App",
   components: {
+    Nav,
     Chat,
-    Title
   },
-  // data() {
-  //   return {
-  //   };
-  // },
+  data() {
+    return {
+      messages: [],
+    };
+  },
+
+  methods: {
+    ClearChat() {
+      this.messages = [];
+    },
+  },
 };
 </script>
 

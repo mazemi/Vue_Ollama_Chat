@@ -9,16 +9,20 @@
         ></div>
       </div>
     </div>
+  </div>
 
-    <div class="input-box">
-      <p v-if="processing" class="processing-container">Processing ...</p>
-      <input
-        v-model="userInput"
-        @keydown.enter="sendMessage"
-        placeholder="Type a message..."
-      />
-      <button @click="sendMessage">Send</button>
+  <div class="input-box">
+    <div v-if="processing" class="processing-container">
+      <h5>Processing ...</h5>
     </div>
+    <textarea
+      class="text-input"
+      v-model="userInput"
+      @keydown.enter="sendMessage"
+      @keydown="handleKeyDown"
+      placeholder="Type a message..."
+      autocomplete="off"
+    />
   </div>
 </template>
 
@@ -32,19 +36,32 @@ import "prismjs/components/prism-r.min.js";
 import { config } from "../ollama-config"; // Import config
 
 export default {
+  props: ['messages'],
+
   data() {
     return {
       userInput: "",
       userInputTemp: "",
-      messages: [],
+      // messages: [],
       isLoading: false,
       processing: false,
     };
   },
   methods: {
+    handleKeyDown(event) {
+      if (event.shiftKey && event.key === "Enter") {
+        event.preventDefault();
+        this.userInput += "\n";
+      }
+    },
+
     async sendMessage() {
       if (this.userInput.trim()) {
-        this.messages.push({ role: "user", content: this.userInput });
+        // Add the user message to the chat history
+        this.messages.push({
+          role: "user",
+          content: this.userInput,
+        });
 
         try {
           this.processing = true;
@@ -52,27 +69,25 @@ export default {
           this.userInput = "";
           this.isLoading = true;
 
-          // Use the values from config.js
+          // Send the entire message history to the API
           const response = await fetch(config.apiUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              model: config.model, // Use the model value from config.js
-              messages: [
-                {
-                  role: "user",
-                  content: this.userInputTemp,
-                },
-              ],
+              model: config.model,
+              messages: this.messages, // Send full chat history
               stream: false,
             }),
           });
 
           const data = await response.json();
+
           this.processing = false;
+
           if (data?.message?.content) {
+            // Add the assistant's response to the chat history
             this.messages.push({
               role: "assistant",
               content: data.message.content,
@@ -91,20 +106,26 @@ export default {
       }
     },
 
-    formatContent(content) {
-      const html = marked(content || "");
+    // NewChat() {
+    //   this.userInput= "";
+    //   this.userInputTemp= "";
+    // },
 
+    formatContent(content) {
+      const html = marked(content || "", { breaks: true });
       this.$nextTick(() => {
         this.highlightCode();
       });
-
       return html;
     },
-
     highlightCode() {
-      const codeBlocks = document.querySelectorAll("pre code");
-      codeBlocks.forEach((block) => {
-        Prism.highlightElement(block);
+      this.$nextTick(() => {
+        const codeBlocks = document.querySelectorAll(
+          ".message-content pre code"
+        );
+        codeBlocks.forEach((block) => {
+          Prism.highlightElement(block); // Highlight each code block
+        });
       });
     },
   },
@@ -133,6 +154,7 @@ body {
   border-radius: 8px;
   height: 100%;
   overflow: hidden;
+  padding-top: 30px;
 }
 
 .chat-box {
@@ -141,67 +163,91 @@ body {
   background-color: #fafafa;
   border-radius: 5px;
   overflow-y: auto;
-  margin-bottom: 80px;
+  margin-bottom: 100px;
 }
 
 .input-box {
   position: fixed;
+  margin: 0 auto;
   bottom: 0;
-  left: 20%;
+  left: 50%;
+  transform: translateX(-50%);
   width: 60%;
-  height: 50px;
+  height: 70px;
   display: flex;
   align-items: center;
-  background-color: #f9f9f9;
   padding: 10px;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
   z-index: 100;
 }
 
-input {
-  flex-grow: 1;
-  padding: 8px;
-  border-radius: 4px;
-  margin-right: 10px;
-  border: 1px solid #ccc;
-}
-
-button {
-  padding: 8px 12px;
-  background-color: #3f029b;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #500cb6;
-}
-
-button:disabled {
-  background-color: #cccccc;
-}
 .processing-container {
-  padding: 10px;
+  position: absolute;
+  z-index: 101;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
-  color: rgb(75, 75, 75);
+  align-items: center;
+  width: 120px;
+  padding: 0px;
+  background-color: rgb(234, 234, 234);
+  border-radius: 20px;
 }
+
+.processing-container h5{
+  margin: 5px;
+}
+
+h5 {
+  color: #8741f0;
+}
+
+.text-input {
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #8741f0;
+  outline: none;
+  resize: vertical;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.text-input:focus {
+  border-color: #6a2dc9;
+  box-shadow: 0 0 5px rgba(138, 43, 226, 0.5);
+}
+
+pre code {
+  background-color: #f5f5f5;
+  padding: 10px;
+  border-radius: 5px;
+  display: block;
+  overflow-x: auto;
+  font-family: Consolas, Monaco, "Courier New", Courier, monospace;
+  font-size: 14px;
+}
+
 .message-role {
   font-weight: bold;
   color: #3f029b;
 }
 
-/* a minimal adjsutment for smaller screen */
-@media (max-width: 768px) {
-  .chat-container {
+@media (max-width: 600px) {
+    .chat-container {
     width: 95%;
   }
 
   .input-box {
-  left: 2.5%;
-  width: 95%;
-  align-items: center;
+    width: 95%;
   }
+
 }
+
 </style>

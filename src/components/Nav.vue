@@ -22,13 +22,13 @@ export default {
 </script>
 
 <style scoped>
-/* Navbar styling */
+
 .navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   background-color: #f9f9f9;
-  padding: 5px 15px;
+  padding: 10px 15px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: fixed;
   top: 0;
@@ -37,7 +37,6 @@ export default {
   z-index: 1000;
 }
 
-/* Icon container styling */
 .icon-container {
   display: flex;
   align-items: center;

@@ -33,7 +33,7 @@ import "prismjs/themes/prism.css";
 import "prismjs/components/prism-javascript.min.js";
 import "prismjs/components/prism-python.min.js";
 import "prismjs/components/prism-r.min.js";
-import { config } from "../ollama-config"; // Import config
+import { config } from "../ollama-config";
 
 export default {
   props: ['messages'],
@@ -42,7 +42,6 @@ export default {
     return {
       userInput: "",
       userInputTemp: "",
-      // messages: [],
       isLoading: false,
       processing: false,
     };
@@ -77,7 +76,7 @@ export default {
             },
             body: JSON.stringify({
               model: config.model,
-              messages: this.messages, // Send full chat history
+              messages: this.messages, 
               stream: false,
             }),
           });
@@ -87,7 +86,6 @@ export default {
           this.processing = false;
 
           if (data?.message?.content) {
-            // Add the assistant's response to the chat history
             this.messages.push({
               role: "assistant",
               content: data.message.content,
@@ -105,11 +103,6 @@ export default {
         }
       }
     },
-
-    // NewChat() {
-    //   this.userInput= "";
-    //   this.userInputTemp= "";
-    // },
 
     formatContent(content) {
       const html = marked(content || "", { breaks: true });
@@ -154,7 +147,7 @@ body {
   border-radius: 8px;
   height: 100%;
   overflow: hidden;
-  padding-top: 30px;
+  padding-top: 40px;
 }
 
 .chat-box {
@@ -237,6 +230,7 @@ pre code {
 .message-role {
   font-weight: bold;
   color: #3f029b;
+  padding-top: 20px;
 }
 
 @media (max-width: 600px) {

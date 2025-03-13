@@ -1,4 +1,4 @@
-# Vue 3 and local LLMA3.2 API Chat
+# Vue 3 and local LLMA API Chat
 
 This is a simple AI chat application built with Vue.js that interacts with an Ollama-based chatbot API. It allows users to send messages and receive responses from an AI assistant.
 
